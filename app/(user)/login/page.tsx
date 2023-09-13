@@ -19,11 +19,33 @@ const page = () => {
   const router = useRouter();
   const [data, setData] = useState<User>();
   const [error, setError] = useState<string>();
+  const [formerr, setFormerr] = useState<any>();
   const [flag, setFlag] = useState<boolean>(false);
   // const [flights, setFlights] = useState<Flight>();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormerr({});
+    setFlag(false);
     setData({ ...data, [e.target.name]: e.target.value });
+  };
+
+  const validation = () => {
+    const err: User = {};
+    let valflag = false;
+    if (!data?.email) {
+      err.email = "Email is required";
+      valflag = true;
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(data?.email)) {
+      err.email = "Invalid email address";
+      valflag = true;
+    }
+    if (!data?.password) {
+      err.password = "Password is required";
+      valflag = true;
+    }
+    setFormerr(err);
+
+    return valflag;
   };
 
   const loginWithgoogle = async (
@@ -43,37 +65,23 @@ const page = () => {
 
   const login = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
-    const resp = await signIn("credentials", {
-      email: data?.email,
-      password: data?.password,
-      redirect: false,
-      // callbackUrl: "/dashboard",
-    });
-    console.log(resp);
-    if (resp?.error) {
-      setFlag(true);
-      setError("Invalid credentials");
-    } else {
-      router.push("/dashboard");
+    if (!validation()) {
+      const resp = await signIn("credentials", {
+        email: data?.email,
+        password: data?.password,
+        redirect: false,
+        // callbackUrl: "/dashboard",
+      });
+      console.log(resp);
+      if (resp?.error) {
+        setFlag(true);
+        setError("Invalid credentials");
+      } else {
+        router.push("/dashboard");
+      }
     }
-
     setData({});
   };
-
-  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   const res = await axios.post("http://localhost:3000/api/user/login", data);
-  //   console.log(res);
-
-  //   // const getflight = await getFlight(res?.data?.findUser?.email);
-
-  //   // // console.log(getflight.data);
-  //   if (res.data.findUser) {
-  //     localStorage.setItem("email", res?.data?.findUser?.email);
-  //     router.push(`${res?.data?.findUser?.company_name}`);
-  //   }
-  // };
-  // console.log(error);
 
   return (
     <>
@@ -88,12 +96,15 @@ const page = () => {
             </div>
           )}
           <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="Email"
-            >
-              Email
-            </label>
+            <div className="flex">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2 mt-1"
+                htmlFor="Email"
+              >
+                Email
+              </label>
+              <span className="text-red-700 ms-1">*</span>
+            </div>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="Email"
@@ -102,26 +113,29 @@ const page = () => {
               name="email"
               onChange={handleChange}
               value={data?.email || ""}
-              // required
             />
+            <div className="text-red-600 font-medium">{formerr?.email}</div>
           </div>
           <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
-              Password
-            </label>
+            <div className="flex">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2 mt-1"
+                htmlFor="password"
+              >
+                Password
+              </label>
+              <span className="text-red-700 ms-1">*</span>
+            </div>
             <input
-              className="shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="password"
               type="password"
               placeholder="Password"
               name="password"
               onChange={handleChange}
               value={data?.password || ""}
-              // required
             />
+            <div className="text-red-600 font-medium">{formerr?.password}</div>
           </div>
           <div className="w-full">
             <button

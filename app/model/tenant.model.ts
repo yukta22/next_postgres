@@ -91,7 +91,7 @@ const TenantsModel = {
   },
   getFlightsInDatabase: async (email: string): Promise<User[] | null> => {
     const client = await pool.connect();
-    console.log("db", db);
+    // console.log("db", db);
     await UserModel.getUser(email);
     try {
       const poolConfig = {
